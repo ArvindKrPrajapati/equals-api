@@ -41,6 +41,7 @@ const sendOtp = async (req, res) => {
                     return res.status(200).json({ success: true, data: { message: "otp send to " + mobile + " number" } })
                 })
                 .catch((err) => {
+                    console.log(err);
                     return res.status(400).json({ success: false,  message: "otp sent failed"  })
                 });
         } else {
@@ -82,7 +83,28 @@ const variefyOtpAndCreate = async (req, res) => {
     }
 }
 
+const login= async(req,res)=>{
+    try {
+        let {mobile ,password}=req.body;
+        if (!mobile ||  !password) {
+            return res.status(400).json({ success: false, message: "mobile ,password are required" })
+        }
+
+          const data=await user.findOne({mobile})
+          if(!data){
+              return res.status(500).json({success:false, message:"user dont exist with this mobile number"})
+          }
+          if(!bcrypt.compareSync(password, data.password)) {
+            return res.status(500).json({success:false, message:"wrong password"})
+        }
+        const token=jwt.sign({id:data._id,name:data.name},process.env.JWT_SECRET);
+        return res.status(200).json({success:true,data:token})
+    } catch (error) {
+        return res.status(500).json({success:false,message:"server error"})
+    }
+}
 module.exports = {
     sendOtp,
-    variefyOtpAndCreate
+    variefyOtpAndCreate,
+    login
 }
