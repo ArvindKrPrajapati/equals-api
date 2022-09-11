@@ -41,7 +41,7 @@ const sendOtp = async (req, res) => {
                     return res.status(200).json({ success: true, data: { message: "otp send to " + mobile + " number" } })
                 })
                 .catch((err) => {
-                    return res.status(200).json({ success: true, data: { message: "otp send to " + mobile + " number" } })
+                    return res.status(400).json({ success: false,  message: "otp sent failed"  })
                 });
         } else {
             return res.status(400).json({ success: false, message: "invalid number" })

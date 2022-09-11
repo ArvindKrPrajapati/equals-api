@@ -21,7 +21,7 @@ app.use("/v1/auth", auth)
 
 
 app.get("/", (req, res) => {
-    res.status(200).json({ msg:"wlcome" })
+    res.status(200).json({ msg:"wwlcome" })
 })
 
 const init = async () => {
