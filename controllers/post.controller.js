@@ -28,26 +28,26 @@ const uploadPost=async (req,res)=>{
 
 
 const doReact=async (req,res)=>{
-//   try {
-//       const {action,postid,postedby}=req.body;
-//       if(postid && action==="like"){
-//         const data=await post.findByIdAndUpdate(postid,{$push:{likes:{by:req.userid}}})
-//         if(postedby!==req.userid){
-//         await notification.create({to:postedby,from:req.userid,onpost:postid,category:"liked"})
-//         }
-//         res.status(200).json({success:true})
-//       }else if(postid && action==="unlike"){
-//         const data=await post.findByIdAndUpdate(postid,{$pull:{likes:{by:req.userid}}})
-//         if(postedby!==req.userid){
-//         await notification.findOneAndDelete({to:postedby,from:req.userid,onpost:postid,category:"liked"})
-//         }
-//         res.status(200).json({success:true})
-//       }else{
-//           res.status(500).json({success:false,error:"all fields are required"})
-//       }
-//   } catch (error) {
-//     res.status(500).json({success:false,error:"your action was not fullfilled"})
-//   }
+  try {
+    const { postid, like } = req.body
+    if (!postid) {
+        return res.status(404).json({ success: false, message: "postid is not provided" })
+    }
+    if (mongoose.Types.ObjectId.isValid(postid)) {
+        const _id = mongoose.Types.ObjectId(postid)
+        if (like) {
+            const data = await post.findByIdAndUpdate(_id, { $push: { likes: { by: req.userid } } }, { new: true })
+            return res.status(200).json({ success: true, data: "liked" })
+        } else {
+            const data = await post.findByIdAndUpdate(_id, { $pull: { likes: { by: req.userid } } }, { new: true })
+            return res.status(200).json({ success: true, data: "disliked" })
+        }
+    } else {
+        return res.status(401).json({ success: false, message: "invalid postid" })
+    }
+} catch (error) {
+    return res.status(500).json({ success: false, message: "server error" })
+}
 }
 
 const comment=async (req,res)=>{
