@@ -70,13 +70,13 @@ const comment=async (req,res)=>{
 }
 
 const getPost=async (req,res)=>{
-    // try {
+    try {
        
-    //       const data=await post.find().populate('postedby',"_id name").select("-__v")
-    //       res.status(200).json({success:true,data})
-    // } catch (error) {
-    //   res.status(500).json({success:false,error:"server error"})
-    // }
+          const data=await post.find().populate('postedby',"_id name dp").select("-__v")
+          res.status(200).json({success:true,data})
+    } catch (error) {
+      res.status(500).json({success:false,error:"server error"})
+    }
   }
   
   const getSubPosts=async (req,res)=>{
