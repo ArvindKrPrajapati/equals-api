@@ -78,30 +78,29 @@ const getPost=async (req,res)=>{
   }
   
   const getSubPosts=async (req,res)=>{
-    // try {
-    //     const userid=req.userid
-    //     const {start}=req.query
-    //       const {following}=await user.findById(userid).select("following")
-    //        following.push(userid)
-    //       const data=await post.find({postedby:{$in:following}}).sort({datetime:-1}).skip(start).limit(10).populate('postedby',"_id name dp").select("-__v")
-    //        let f=[];
-    //       await data.map((o)=>{
-    //         f.push({
-    //         _id:o._id,
-    //         image:o.image,
-    //         text:o.text,
-    //         postedby:o.postedby,
-    //         datetime:o.datetime,
-    //         now:new Date(Date.now()),
-    //         likes:o.likes.length,
-    //         comments:o.comments.length,
-    //         ilike:o.likes.some(u=>u.by==userid)
-    //         })
-    //       })
-    //       res.status(200).json({success:true,data:f})
-    // } catch (error) {
-    //   res.status(500).json({success:false,error:"server error"})
-    // }
+    try {
+      const skip = Number(req.query.skip) || 0
+      const data = await post.aggregate([
+          { $sort: { datetime: -1 } },
+          { $skip: skip },
+          { $limit: 10 },
+          { $lookup: { from: 'users', localField: 'postedby', foreignField: '_id', as: 'postedby' } },
+          { $unwind: '$postedby' },
+          {
+              $project: {
+                  image: 1,
+                  text: 1,
+                  isLiked: { $in: [mongoose.Types.ObjectId(req.userid), "$likes.by"] },
+                  postedby: { _id: 1, name: 1, dp: 1 },
+                  likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
+                  comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } },
+              }
+          },
+      ])
+      return res.status(200).json({ success: true, data })
+  } catch (error) {
+    return res.status(500).json({success:false,message:"server error"})
+  }
   }
 
   const getSpecificPost=async (req,res)=>{
