@@ -10,17 +10,15 @@ const uploadPost=async (req,res)=>{
   try {
       const {image,text}=req.body;
       if(!image && !text){
-        return res.status(404).json({success:false,message:"provide image or text"})
+        return res.status(404).json({success:false,message:"provide image or image and text"})
       }
       
       if(image && text){
         const data=await post.create({image,text,postedby:req.userid})
       }else if(image){
         const data=await post.create({image,postedby:req.userid})
-      }else if(text){
-        const data=await post.create({text,postedby:req.userid})
       }else{
-          return res.status(500).json({success:false,message:"provide any field"})
+          return res.status(500).json({success:false,message:"provide image or image and text field"})
       }
       return res.status(200).json({success:true})
   } catch (error) {
