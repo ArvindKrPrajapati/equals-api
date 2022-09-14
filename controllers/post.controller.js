@@ -89,6 +89,7 @@ const getPost=async (req,res)=>{
           {
               $project: {
                   image: 1,
+                  datetime:1,
                   text: 1,
                   isLiked: { $in: [mongoose.Types.ObjectId(req.userid), "$likes.by"] },
                   postedby: { _id: 1, name: 1, dp: 1 },
