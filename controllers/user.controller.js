@@ -53,6 +53,8 @@ const getUserById = async (req, res) => {
                 _id:userInfo._id,
                 about:userInfo.about,
                 posts:posts,
+                dp:userInfo.dp,
+                gender:userInfo.gender,
                 ifollow:ifollow==0 ? false : true,
                 followers,
                 followings
