@@ -69,13 +69,15 @@ const getUserById = async (req, res) => {
 }
 
 const liveSearch = async (req, res) => {
-    // try {
-    //     const {name}=req.query
-    //       const data=await user.find({name:{$regex: '^' + name, $options: 'i'}}).select("name image _id isVarified").sort({datetime:-1})
-    //       res.status(200).json({success:true,data})
-    // } catch (error) {
-    //   res.status(500).json({success:false,message:"server error"})
-    // }
+    try {
+        const {name}=req.query
+        const skip = Number(req.query.skip) || 0
+
+          const data=await user.find({name:{$regex: '^' + name, $options: 'i'}}).select("name dp gender _id ").sort({datetime:-1}).skip(skip).limit(20)
+          res.status(200).json({success:true,data})
+    } catch (error) {
+      res.status(500).json({success:false,message:"server error"})
+    }
 }
 
 const editProfile = async (req, res) => {
