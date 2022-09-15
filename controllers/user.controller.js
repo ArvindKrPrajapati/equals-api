@@ -4,19 +4,27 @@ const user = require("../modals/user.modal")
 const jwt = require('jsonwebtoken');
 
 const mongoose = require('mongoose');
-const getLoggedInUserInfo=async(req,res)=>{
+const getLoggedInUserInfo = async (req, res) => {
     try {
-        let _id=req.userid
+        let _id = req.userid
         if (!_id) {
             return res.status(404).json({ success: false, message: "id is not found in token" })
         }
         if (mongoose.Types.ObjectId.isValid(_id)) {
             _id = mongoose.Types.ObjectId(_id)
-            const data = await user.findOne({ _id }).select('_id name dp')
+            const data = await user.findOne({ _id }).select('_id name dp followers following')
             if (!data) {
                 return res.status(404).json({ success: false, message: 'user not found' })
             }
-            return res.status(200).json({ success: true, data})
+            return res.status(200).json({
+                success: true, data: {
+                    _id: data._id,
+                    name: data.name,
+                    dp: data.dp,
+                    followers: data.followers.length,
+                    following: data.following.length
+                }
+            })
         } else {
             return res.status(401).json({ success: false, message: "invalid id in token" })
         }
@@ -40,7 +48,7 @@ const getUserById = async (req, res) => {
     //         const ifollow = await follow.findOne({to:_id,by:req.userid}).count()
     //         const followers=await follow.find({to:_id}).count()
     //         const followings=await follow.find({by:_id}).count()
-            
+
     //         return res.status(200).json({ success: true, data:{
     //             name:userInfo.name,_id:userInfo._id,desc:userInfo.desc,image:userInfo.image,isVarified:userInfo.isVarified,
     //             shorts:shorts,ifollow:ifollow==0 ? false : true,
@@ -55,7 +63,7 @@ const getUserById = async (req, res) => {
     // }
 }
 
-const liveSearch=async (req,res)=>{
+const liveSearch = async (req, res) => {
     // try {
     //     const {name}=req.query
     //       const data=await user.find({name:{$regex: '^' + name, $options: 'i'}}).select("name image _id isVarified").sort({datetime:-1})
@@ -63,9 +71,9 @@ const liveSearch=async (req,res)=>{
     // } catch (error) {
     //   res.status(500).json({success:false,message:"server error"})
     // }
-  }
+}
 
-  const editProfile=async (req,res)=>{
+const editProfile = async (req, res) => {
     // try {
     //     const {name,desc}=req.body
     //     if (!name) {
@@ -77,9 +85,9 @@ const liveSearch=async (req,res)=>{
     // } catch (error) {
     //   res.status(500).json({success:false,message:"server error"})
     // }
-  }
+}
 
-  const updateDp=async (req,res)=>{
+const updateDp = async (req, res) => {
     // try {
     //     const {url}=req.body
     //     if (!url) {
@@ -91,7 +99,7 @@ const liveSearch=async (req,res)=>{
     // } catch (error) {
     //   res.status(500).json({success:false,message:"server error"})
     // }
-  }
+}
 module.exports = {
     getLoggedInUserInfo,
     getUserById,
