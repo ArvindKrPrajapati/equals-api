@@ -92,7 +92,12 @@ const getPost=async (req,res)=>{
                   datetime:1,
                   text: 1,
                   isLiked: { $in: [mongoose.Types.ObjectId(req.userid), "$likes.by"] },
-                  postedby: { _id: 1, name: 1, dp: 1 },
+                  postedby: { _id: 1,
+                             name: 1,
+                             dp: 1 ,
+                             followers:{ $cond: { if: { $isArray: "$followers" }, then: { $size: "$followers" }, else: 0 } },
+                             following:{ $cond: { if: { $isArray: "$following" }, then: { $size: "$following" }, else: 0 } }
+                            },
                   likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
                   comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } },
               }
@@ -100,6 +105,7 @@ const getPost=async (req,res)=>{
       ])
       return res.status(200).json({ success: true, data })
   } catch (error) {
+    console.log(error);
     return res.status(500).json({success:false,message:"server error"})
   }
   }
