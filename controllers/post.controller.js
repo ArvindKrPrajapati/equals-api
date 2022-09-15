@@ -150,25 +150,36 @@ const getPost=async (req,res)=>{
 
 
   const getUserPosts=async (req,res)=>{
-//     const {id}=req.query
-//     const userid=req.userid
-//     const data=await post.find({postedby:id}).populate('postedby',"_id name dp").select("-__v").sort({datetime:-1})
-//     let f=[];
-//    await data.map((o)=>{
-//      f.push({
-//      _id:o._id,
-//      image:o.image,
-//      text:o.text,
-//      postedby:o.postedby,
-//      datetime:o.datetime,
-//      now:new Date(Date.now()),
-//      likes:o.likes.length,
-//      comments:o.comments.length,
-//      ilike:o.likes.some(u=>u.by==userid)
-//      })
-//    })
-//    res.status(200).json({success:true,data:f})
-    
+    try {
+      let _id = req.query.id
+      const skip = Number(req.query.skip) || 0
+      if (!_id) {
+          return res.status(404).json({ success: false, message: "id is not provided" })
+      }
+      if (mongoose.Types.ObjectId.isValid(_id)) {
+          _id = mongoose.Types.ObjectId(_id)
+          const data = await post.aggregate([
+              { $match: { postedby: _id } },
+              { $sort: { datetime: -1 } },
+              { $skip: skip },
+              { $limit: 9 },
+              {
+                  $project: {
+                      image: 1,
+                      likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
+                      comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } }
+                  }
+              },
+
+
+          ])
+          return res.status(200).json({ success: true, data })
+      } else {
+          return res.status(401).json({ success: false, message: "invalid id" })
+      }
+  } catch (error) {
+      return res.status(500).json({ success: false, message: "server error" })
+  }
   }
 
   const deletePost=async (req,res)=>{
