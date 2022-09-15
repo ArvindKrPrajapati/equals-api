@@ -95,6 +95,9 @@ const getPost=async (req,res)=>{
                   postedby: { _id: 1,
                              name: 1,
                              dp: 1 ,
+                             dob:1,
+                             about:1,
+                             gender:1,
                              followers:{ $cond: { if: { $isArray: "$followers" }, then: { $size: "$followers" }, else: 0 } },
                              following:{ $cond: { if: { $isArray: "$following" }, then: { $size: "$following" }, else: 0 } }
                             },
