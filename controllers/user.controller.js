@@ -12,7 +12,7 @@ const getLoggedInUserInfo = async (req, res) => {
         }
         if (mongoose.Types.ObjectId.isValid(_id)) {
             _id = mongoose.Types.ObjectId(_id)
-            const data = await user.findOne({ _id }).select('_id name dp dob gender about')
+            const data = await user.findOne({ _id }).select('_id name dp gender')
             if (!data) {
                 return res.status(404).json({ success: false, message: 'user not found' })
             }
@@ -21,9 +21,7 @@ const getLoggedInUserInfo = async (req, res) => {
                     _id: data._id,
                     name: data.name,
                     dp: data.dp,
-                    dob:data.dob,
-                    gender:data.gender,
-                    about:data.about
+                    gender:data.gender
                 }
             })
         } else {
