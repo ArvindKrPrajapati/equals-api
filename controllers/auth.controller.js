@@ -67,7 +67,7 @@ const variefyOtpAndCreate = async (req, res) => {
             if (varify) {
                 password=bcrypt.hashSync(password,10);
                 const newUser = await user.create({ mobile, name,password })
-                token = jwt.sign(JSON.stringify({ _id: newUser._id, name: newUser.name }), process.env.JWT_SECRET);
+                token = jwt.sign(JSON.stringify({ id: newUser._id, name: newUser.name }), process.env.JWT_SECRET);
 
                 await otps.findOneAndDelete({ mobile })
                 return res.status(200).json({ success: true, data: token })
