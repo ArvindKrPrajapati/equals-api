@@ -98,8 +98,6 @@ const getPost=async (req,res)=>{
                              dob:1,
                              about:1,
                              gender:1,
-                             followers:{ $cond: { if: { $isArray: "$followers" }, then: { $size: "$followers" }, else: 0 } },
-                             following:{ $cond: { if: { $isArray: "$following" }, then: { $size: "$following" }, else: 0 } }
                             },
                   likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
                   comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } },

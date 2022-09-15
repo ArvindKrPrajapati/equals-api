@@ -30,8 +30,6 @@ const user =new mongoose.Schema({
      type:String,
      required:true
  },
- followers:[{type:ObjectId,ref:'user'}],
- following:[{type:ObjectId,ref:'user'}],
  datetime : { type : Date, default: Date.now }
 
 });
