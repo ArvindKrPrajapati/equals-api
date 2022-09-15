@@ -8,7 +8,6 @@ const authlogin=(req,res,next)=>{
         try {
             const decoded= jwt.verify(token,process.env.JWT_SECRET)
             req.userid=decoded.id
-            console.log(decoded.id)
         } catch (error) {
            return res.status(401).json({success:false,message:"you are not authorize to access this route"})
         }
