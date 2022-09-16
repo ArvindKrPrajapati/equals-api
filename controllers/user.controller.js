@@ -21,7 +21,7 @@ const getLoggedInUserInfo = async (req, res) => {
                     _id: data._id,
                     name: data.name,
                     dp: data.dp,
-                    gender:data.gender
+                    gender: data.gender
                 }
             })
         } else {
@@ -43,22 +43,24 @@ const getUserById = async (req, res) => {
             if (!userInfo) {
                 return res.status(404).json({ success: false, message: 'user not found' })
             }
-            const posts =await post.find({postedby:_id}).count()
-            const ifollow = await follow.findOne({to:_id,by:req.userid}).count()
-            const followers=await follow.find({to:_id}).count()
-            const followings=await follow.find({by:_id}).count()
+            const posts = await post.find({ postedby: _id }).count()
+            const ifollow = await follow.findOne({ to: _id, by: req.userid }).count()
+            const followers = await follow.find({ to: _id }).count()
+            const followings = await follow.find({ by: _id }).count()
 
-            return res.status(200).json({ success: true, data:{
-                name:userInfo.name,
-                _id:userInfo._id,
-                about:userInfo.about,
-                posts:posts,
-                dp:userInfo.dp,
-                gender:userInfo.gender,
-                ifollow:ifollow==0 ? false : true,
-                followers,
-                followings
-            } })
+            return res.status(200).json({
+                success: true, data: {
+                    name: userInfo.name,
+                    _id: userInfo._id,
+                    about: userInfo.about,
+                    posts: posts,
+                    dp: userInfo.dp,
+                    gender: userInfo.gender,
+                    ifollow: ifollow == 0 ? false : true,
+                    followers,
+                    followings
+                }
+            })
         } else {
             return res.status(401).json({ success: false, message: "invalid id" })
         }
@@ -70,40 +72,39 @@ const getUserById = async (req, res) => {
 
 const liveSearch = async (req, res) => {
     try {
-        const {name}=req.query
+        const { name } = req.query
         const skip = Number(req.query.skip) || 0
 
-          const data=await user.find({name:{$regex: '^' + name, $options: 'i'}}).select("name dp gender _id ").sort({datetime:-1}).skip(skip).limit(20)
-          res.status(200).json({success:true,data})
+        const data = await user.find({ name: { $regex: '^' + name, $options: 'i' } }).select("name dp gender _id ").sort({ datetime: -1 }).skip(skip).limit(20)
+        res.status(200).json({ success: true, data })
     } catch (error) {
-      res.status(500).json({success:false,message:"server error"})
+        res.status(500).json({ success: false, message: "server error" })
     }
 }
 
 const editProfile = async (req, res) => {
-    // try {
-    //     const {name,desc}=req.body
-    //     if (!name) {
-    //         return res.status(404).json({ success: false, message: "name is not provided" })
-    //       }
-    //       const data=await user.findByIdAndUpdate(req.userid,{name,desc},{new:true})
-    //       const token = jwt.sign(JSON.stringify({_id:data._id,image:data.image, name: data.name,isVarified:data.isVarified }), process.env.JWT_SECRET)
-    //       res.status(200).json({success:true,data:token})
-    // } catch (error) {
-    //   res.status(500).json({success:false,message:"server error"})
-    // }
+    try {
+        const { name, about, dob, gender } = req.body
+        if (!name) {
+            return res.status(404).json({ success: false, message: "name is not provided" })
+        }
+        const data = await user.findByIdAndUpdate(req.userid, { name, about, dob, gender }, { new: true })
+        getLoggedInUserInfo(req, res)
+    } catch (error) {
+        res.status(500).json({ success: false, message: "server error" })
+    }
 }
 
 const updateDp = async (req, res) => {
     try {
-        const {dp}=req.body
+        const { dp } = req.body
         if (!dp) {
             return res.status(404).json({ success: false, message: "dp is not provided" })
-          }
-          const data=await user.findByIdAndUpdate(req.userid,{dp},{new:true})
-         getLoggedInUserInfo(req,res)
+        }
+        const data = await user.findByIdAndUpdate(req.userid, { dp }, { new: true })
+        getLoggedInUserInfo(req, res)
     } catch (error) {
-      res.status(500).json({success:false,message:"server error"})
+        res.status(500).json({ success: false, message: "server error" })
     }
 }
 module.exports = {
