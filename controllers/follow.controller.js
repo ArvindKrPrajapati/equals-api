@@ -64,7 +64,7 @@ const getFollowers = async (req, res) => {
             dp:"$by.dp",
             dob:"$by.dob",
             about:"$by.about",
-            gender:"$by.gender"
+            gender:"$by.gender",
           }
         },
       ])
@@ -109,7 +109,8 @@ const getFollowings = async (req, res) => {
             dp:"$to.dp",
             dob:"$to.dob",
             about:"$to.about",
-            gender:"$to.gender"            
+            gender:"$to.gender",
+            ifollow:true         
           }
         },
       ])
