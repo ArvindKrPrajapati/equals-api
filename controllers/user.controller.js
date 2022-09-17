@@ -84,6 +84,8 @@ const liveSearch = async (req, res) => {
     }
 }
 
+
+
 const editProfile = async (req, res) => {
     try {
         const { name, about, dob, gender } = req.body
