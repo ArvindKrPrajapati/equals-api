@@ -100,16 +100,16 @@ const getFollowings = async (req, res) => {
         { $sort: { datetime: -1 } },
         { $skip: skip },
         { $limit: 20 },
-        { $lookup: { from: 'users', localField: 'by', foreignField: '_id', as: 'by' } },
-        { $unwind: '$by' },
+        { $lookup: { from: 'users', localField: 'to', foreignField: '_id', as: 'to' } },
+        { $unwind: '$to' },
         {
           $project: {
-            _id: "$by._id",
-            name:"$by.name",
-            dp:"$by.dp",
-            dob:"$by.dob",
-            about:"$by.about",
-            gender:"$by.gender"            
+            _id: "$to._id",
+            name:"$to.name",
+            dp:"$to.dp",
+            dob:"$to.dob",
+            about:"$to.about",
+            gender:"$to.gender"            
           }
         },
       ])
