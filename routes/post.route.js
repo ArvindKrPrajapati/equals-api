@@ -4,7 +4,8 @@ const postroute=express.Router();
 
 const { getPost, doReact, comment, getSubPosts, uploadPost, getUserPosts, getSpecificPost, getComments, deletePost, getAlert} = require("../controllers/post.controller");
 
-postroute.route("/").get(getPost).patch(deletePost)
+postroute.route("/").get(getPost)
+postroute.route("/deletepost").delete(deletePost)
 postroute.route("/getuserposts").get(getUserPosts)
 postroute.route("/getspecificpost").get(getSpecificPost)
 postroute.route("/getcomments").get(getComments)
