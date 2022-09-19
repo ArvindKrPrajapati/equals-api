@@ -51,20 +51,181 @@ const doReact = async (req, res) => {
 }
 
 const comment = async (req, res) => {
-  //   try {
-  //       const {postid,comm,postedby}=req.body;
-  //       if(postid && comm){
-  //         const data=await post.findByIdAndUpdate(postid,{$push:{comments:{by:req.userid,comm:comm}}},{new:true})
-  //         if(postedby!==req.userid){
-  //           await notification.create({to:postedby,from:req.userid,onpost:postid,category:"commented",comm,commid:data._id})
-  //         }
-  //         res.status(200).json({success:true})
-  //       }else{
-  //           res.status(500).json({success:false,error:"all fields are required"})
-  //       }
-  //   } catch (error) {
-  //     res.status(500).json({success:false,error:"your action was not fullfilled"})
-  //   }
+  try {
+    const { postid, comm } = req.body
+    if (!postid || !comm) {
+      return res.status(404).json({ success: false, message: "postid or comm is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid)) {
+      const _id = mongoose.Types.ObjectId(postid)
+      const data = await post.findByIdAndUpdate(_id, { $push: { comments: { by: req.userid, comm } } }, { new: true })
+      return res.status(200).json({ success: true, data: data?.comments })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+
+const deleteComment = async (req, res) => {
+  try {
+    let { postid, commid } = req.body
+    if (!postid || !commid) {
+      return res.status(404).json({ success: false, message: "postid or commid is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid) && mongoose.Types.ObjectId(commid)) {
+      postid = mongoose.Types.ObjectId(postid)
+      commid = mongoose.Types.ObjectId(commid)
+      const data = await post.findByIdAndUpdate({ _id: postid },
+        { $pull: { comments: { by: req.userid, _id: commid } } },
+        { new: true })
+      return res.status(200).json({ success: true, data: "if comment exists and belongs to you then its deleted" })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+
+const likeOncomment = async (req, res) => {
+  try {
+    let { postid, commid } = req.body
+    const myid = req.userid
+    if (!postid || !commid) {
+      return res.status(404).json({ success: false, message: "postid or commid is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid) && mongoose.Types.ObjectId.isValid(commid)) {
+      postid = mongoose.Types.ObjectId(postid)
+      commid = mongoose.Types.ObjectId(commid)
+      const data = await post.updateOne({ _id: postid, "comments._id": commid },
+        { $push: { "comments.$.likes": { by: myid } } },
+        { new: true })
+      if (!data.acknowledged) {
+        return res.status(200).json({ success: false, message: "failed" })
+      }
+      return res.status(200).json({ success: true, data: data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid or commid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+
+const dislikeOncomment = async (req, res) => {
+  try {
+    let { postid, commid } = req.body
+    const myid = req.userid
+    if (!postid || !commid) {
+      return res.status(404).json({ success: false, message: "postid or commid is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid) && mongoose.Types.ObjectId.isValid(commid)) {
+      postid = mongoose.Types.ObjectId(postid)
+      commid = mongoose.Types.ObjectId(commid)
+      const data = await post.updateOne({ _id: postid, "comments._id": commid },
+        { $pull: { "comments.$.likes": { by: myid } } },
+        { new: true })
+      if (!data.acknowledged) {
+        return res.status(200).json({ success: false, message: "failed" })
+      }
+      return res.status(200).json({ success: true, data: data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid or commid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+
+const replyComment = async (req, res) => {
+  try {
+    let { postid, commid, comm } = req.body
+    const myid = req.userid
+    if (!postid || !comm || !commid) {
+      return res.status(404).json({ success: false, message: "postid or comm or commid is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid) && mongoose.Types.ObjectId.isValid(commid)) {
+      postid = mongoose.Types.ObjectId(postid)
+      commid = mongoose.Types.ObjectId(commid)
+      const data = await post.updateOne({ _id: postid, "comments._id": commid },
+        { $push: { "comments.$.reply": { by: myid, comm: comm } } },
+        { new: true })
+      if (!data.acknowledged) {
+        return res.status(200).json({ success: false, message: "failed" })
+      }
+      return res.status(200).json({ success: true, data: data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+const deleteReplyComment = async (req, res) => {
+  try {
+    let { postid, commid, replyid } = req.body
+    const myid=req.userid
+    if (!postid || !commid || !replyid) {
+      return res.status(404).json({ success: false, message: "postid or replyid or commid is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid) && mongoose.Types.ObjectId(commid) && mongoose.Types.ObjectId(replyid)) {
+      postid = mongoose.Types.ObjectId(postid)
+      commid = mongoose.Types.ObjectId(commid)
+      replyid = mongoose.Types.ObjectId(replyid)
+      const data = await post.updateOne({ _id: postid, "comments._id": commid },
+        { $pull: { "comments.$.reply": { by: myid, _id: replyid } } },
+        { new: true })
+      if (!data.acknowledged) {
+        return res.status(200).json({ success: false, message: "failed" })
+      }
+      return res.status(200).json({ success: true, data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+const likeOnReplycomment = async (req, res) => {
+  try {
+    let { postid, commid, replyid } = req.body
+    const myid = req.userid
+    if (!postid || !commid || !replyid) {
+      return res.status(404).json({ success: false, message: "postid or commid or replyid is not provided" })
+    }
+
+    if (mongoose.Types.ObjectId.isValid(postid) && mongoose.Types.ObjectId.isValid(commid) && mongoose.Types.ObjectId.isValid(replyid)) {
+      postid = mongoose.Types.ObjectId(postid)
+      commid = mongoose.Types.ObjectId(commid)
+      replyid = mongoose.Types.ObjectId(replyid)
+      const data = await post.updateOne({ _id: postid, "comments._id": commid, "reply._id": replyid },
+        { $push: { "reply.$.likes": { by: myid } } },
+        { new: true })
+      if (!data.acknowledged) {
+        return res.status(200).json({ success: false, message: "failed" })
+      }
+      return res.status(200).json({ success: true, data: data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid postid or commid or replyid" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
 }
 
 const getPost = async (req, res) => {
@@ -136,14 +297,17 @@ const getSpecificPost = async (req, res) => {
 }
 
 const getComments = async (req, res) => {
-  // try {
-  //     const {postid}=req.query
-  //       const {comments}=await post.findById(postid).select("comments").populate("comments.by","_id name dp").sort({'comments.datetime':-1})
-  //       res.status(200).json({success:true,data:comments})
+  try {
+    const { postid } = req.query
+    const _id = mongoose.Types.ObjectId(postid)
 
-  // } catch (error) {
-  //   res.status(500).json({success:false,error:"server error"})
-  // }
+    const data = await post.findById({ _id }).select("comments")
+    res.status(200).json({ success: true, data: data?.comments })
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ success: false, error: "server error" })
+  }
 
 }
 
@@ -222,5 +386,20 @@ const getAlert = async (req, res) => {
   // }
 }
 module.exports = {
-  getPost, doReact, comment, getSubPosts, uploadPost, getUserPosts, getSpecificPost, getComments, deletePost, getAlert
+  getPost,
+  doReact,
+  comment,
+  getSubPosts,
+  uploadPost,
+  getUserPosts,
+  getSpecificPost,
+  getComments,
+  deletePost,
+  getAlert,
+  likeOncomment,
+  dislikeOncomment,
+  replyComment,
+  likeOnReplycomment,
+  deleteComment,
+  deleteReplyComment
 }
