@@ -4,6 +4,8 @@ const follow = require("../modals/follow.modal")
 const jwt = require('jsonwebtoken');
 
 const mongoose = require('mongoose');
+
+
 const getLoggedInUserInfo = async (req, res) => {
     try {
         let _id = req.userid
@@ -22,8 +24,8 @@ const getLoggedInUserInfo = async (req, res) => {
                     name: data.name,
                     dp: data.dp,
                     gender: data.gender,
-                    dob:data.dob,
-                    about:data.about
+                    dob: data.dob,
+                    about: data.about
                 }
             })
         } else {
@@ -116,5 +118,5 @@ module.exports = {
     getUserById,
     liveSearch,
     editProfile,
-    updateDp
+    updateDp,
 }

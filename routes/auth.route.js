@@ -1,9 +1,8 @@
 const express = require("express")
 const route = express.Router()
-const { sendOtp,variefyOtpAndCreate, login } = require("../controllers/auth.controller")
+const { login, signup } = require("../controllers/auth.controller")
 
-route.post("/send-otp", sendOtp)
 route.post("/login", login)
-route.post("/varify-otp-create", variefyOtpAndCreate)
+route.post("/signup", signup)
 
-module.exports=route
+module.exports = route

@@ -12,6 +12,10 @@ const doFollow = async (req, res) => {
       return res.status(404).json({ success: false, message: "action is not provided" })
     }
 
+    if (to.toString() == req.userid.toString()) {
+      return res.status(401).json({ success: false, message: "you cannot follow or unfollow yourself" })
+    }
+
     if (mongoose.Types.ObjectId.isValid(to)) {
       to = mongoose.Types.ObjectId(to)
       if (action === "follow") {
@@ -49,7 +53,7 @@ const getFollowers = async (req, res) => {
       if (!userInfo) {
         return res.status(404).json({ success: false, message: 'user not found' })
       }
-     
+
       const followers = await follow.aggregate([
         { $match: { to: _id } },
         { $sort: { datetime: -1 } },
@@ -60,11 +64,11 @@ const getFollowers = async (req, res) => {
         {
           $project: {
             _id: "$by._id",
-            name:"$by.name",
-            dp:"$by.dp",
-            dob:"$by.dob",
-            about:"$by.about",
-            gender:"$by.gender",
+            name: "$by.name",
+            dp: "$by.dp",
+            dob: "$by.dob",
+            about: "$by.about",
+            gender: "$by.gender",
           }
         },
       ])
@@ -94,7 +98,7 @@ const getFollowings = async (req, res) => {
       if (!userInfo) {
         return res.status(404).json({ success: false, message: 'user not found' })
       }
-     
+
       const followers = await follow.aggregate([
         { $match: { by: _id } },
         { $sort: { datetime: -1 } },
@@ -105,11 +109,11 @@ const getFollowings = async (req, res) => {
         {
           $project: {
             _id: "$to._id",
-            name:"$to.name",
-            dp:"$to.dp",
-            dob:"$to.dob",
-            about:"$to.about",
-            gender:"$to.gender"         
+            name: "$to.name",
+            dp: "$to.dp",
+            dob: "$to.dob",
+            about: "$to.about",
+            gender: "$to.gender"
           }
         },
       ])
