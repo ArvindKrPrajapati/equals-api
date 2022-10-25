@@ -9,7 +9,7 @@ const post = new mongoose.Schema({
     ref: 'user'
   },
   likes: [{
-    by: { type: ObjectId, ref: 'user', unique: true },
+    by: { type: ObjectId, ref: 'user' },
     datetime: { type: Date, default: Date.now }
   }],
   comments: [
@@ -17,7 +17,7 @@ const post = new mongoose.Schema({
       by: { type: ObjectId, ref: 'user' },
       comm: String,
       likes: [{
-        by: { type: ObjectId, ref: 'user', unique: true },
+        by: { type: ObjectId, ref: 'user' },
         datetime: { type: Date, default: Date.now }
       }],
       datetime: { type: Date, default: Date.now }

@@ -21,7 +21,7 @@ const signup = async (req, res) => {
             if (!varify) {
                 password = bcrypt.hashSync(password, 10);
                 const newUser = await user.create({ mobile, gender, name, password })
-                token = jwt.sign(JSON.stringify({ id: newUser._id, name: newUser.name }), process.env.JWT_SECRET);
+                const token = jwt.sign(JSON.stringify({ id: newUser._id, name: newUser.name, dp: newUser.dp }), process.env.JWT_SECRET);
                 return res.status(200).json({ success: true, data: token })
             } else {
                 return res.status(401).json({ success: false, message: "User already exists" })
@@ -49,7 +49,7 @@ const login = async (req, res) => {
         if (!bcrypt.compareSync(password, data.password)) {
             return res.status(500).json({ success: false, message: "wrong password" })
         }
-        const token = jwt.sign({ id: data._id, name: data.name }, process.env.JWT_SECRET);
+        const token = jwt.sign({ id: data._id, name: data.name, dp: data.dp }, process.env.JWT_SECRET);
         return res.status(200).json({ success: true, data: token })
     } catch (error) {
         return res.status(500).json({ success: false, message: "server error" })

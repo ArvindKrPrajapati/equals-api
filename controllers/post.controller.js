@@ -198,6 +198,7 @@ const deletePost = async (req, res) => {
 const getUserPosts = async (req, res) => {
   try {
     let _id = req.query.id
+    const now = Date.now()
     const skip = Number(req.query.skip) || 0
     if (!_id) {
       return res.status(404).json({ success: false, message: "id is not provided" })
@@ -209,15 +210,28 @@ const getUserPosts = async (req, res) => {
         { $sort: { datetime: -1 } },
         { $skip: skip },
         { $limit: 9 },
+        { $lookup: { from: 'users', localField: 'postedby', foreignField: '_id', as: 'postedby' } },
+        { $unwind: '$postedby' },
         {
           $project: {
             image: 1,
+            datetime: 1,
+            text: 1,
+            isLiked: { $in: [mongoose.Types.ObjectId(req.userid), "$likes.by"] },
+            postedby: {
+              _id: 1,
+              name: 1,
+              dp: 1,
+              dob: 1,
+              about: 1,
+              gender: 1,
+            },
             likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
-            comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } }
+            comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } },
+            now: now
           }
         },
-
-
+        { $addFields: { now: now } },
       ])
       return res.status(200).json({ success: true, data })
     } else {
@@ -231,12 +245,14 @@ const getUserPosts = async (req, res) => {
 const getSubPosts = async (req, res) => {
   try {
     const skip = Number(req.query.skip) || 0
+    const now = Date.now()
     const data = await post.aggregate([
       { $sort: { datetime: -1 } },
       { $skip: skip },
       { $limit: 10 },
       { $lookup: { from: 'users', localField: 'postedby', foreignField: '_id', as: 'postedby' } },
       { $unwind: '$postedby' },
+      { $addFields: { now: now } },
       {
         $project: {
           image: 1,
@@ -253,6 +269,7 @@ const getSubPosts = async (req, res) => {
           },
           likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
           comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } },
+          now: now
         }
       },
     ])
