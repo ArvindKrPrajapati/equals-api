@@ -83,7 +83,7 @@ const comment = async (req, res) => {
       const isExist = await isPostExists(_id)
       if (isExist) {
         const data = await post.findByIdAndUpdate(_id, { $push: { comments: { by: req.userid, comm } } }, { new: true })
-        return res.status(200).json({ success: true, data: data?.comments })
+        return res.status(200).json({ success: true })
       }
     }
     return res.status(401).json({ success: false, message: "invalid postid or post no longer exists" })
@@ -282,27 +282,96 @@ const getSubPosts = async (req, res) => {
 
 
 const getSpecificPost = async (req, res) => {
-  // try {
-  //     const {postid}=req.query
-  //     const {userid}=req
-  //       const data=await post.findById(postid).populate('postedby',"_id name dp")
-  //       res.status(200).json({success:true,data:{
-  //          _id:data._id,
-  //         image:data.image,
-  //         text:data.text,
-  //         postedby:data.postedby,
-  //         datetime:data.datetime,
-  //         now:new Date(Date.now()),
-  //         likes:data.likes.length,
-  //         comments:data.comments.length,
-  //         ilike:data.likes.some(u=>u.by==userid)
-  //       }})
-
-  // } catch (error) {
-  //   res.status(500).json({success:false,error:"server error"})
-  // }
-
+  try {
+    let _id = req.query.id
+    const now = Date.now()
+    if (!_id) {
+      return res.status(404).json({ success: false, message: "id is not provided" })
+    }
+    if (mongoose.Types.ObjectId.isValid(_id)) {
+      _id = mongoose.Types.ObjectId(_id)
+      const data = await post.aggregate([
+        { $match: { _id: _id } },
+        { $lookup: { from: 'users', localField: 'postedby', foreignField: '_id', as: 'postedby' } },
+        { $unwind: '$postedby' },
+        {
+          $project: {
+            image: 1,
+            datetime: 1,
+            text: 1,
+            isLiked: { $in: [mongoose.Types.ObjectId(req.userid), "$likes.by"] },
+            postedby: {
+              _id: 1,
+              name: 1,
+              dp: 1,
+              dob: 1,
+              about: 1,
+              gender: 1,
+            },
+            likes: { $cond: { if: { $isArray: "$likes" }, then: { $size: "$likes" }, else: 0 } },
+            comments: { $cond: { if: { $isArray: "$comments" }, then: { $size: "$comments" }, else: 0 } },
+          }
+        },
+        { $addFields: { now: now } },
+      ])
+      return res.status(200).json({ success: true, data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid id" })
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "server error" })
+  }
 }
+
+
+
+const getComments = async (req, res) => {
+  try {
+    let _id = req.query.id
+    const now = Date.now()
+    const skip = Number(req.query.skip) || 0
+    if (!_id) {
+      return res.status(404).json({ success: false, message: "id is not provided" })
+    }
+    if (mongoose.Types.ObjectId.isValid(_id)) {
+      _id = mongoose.Types.ObjectId(_id)
+      const data = await post.aggregate([
+        { $match: { _id: _id } },
+        {
+          $unwind: {
+            path: '$comments'
+          }
+        },
+        { $lookup: { from: 'users', localField: 'comments.by', foreignField: '_id', as: 'comments.by' } },
+        { $unwind: '$comments.by' },
+        {
+          $project: {
+            _id: "$comments._id",
+            comm: "$comments.comm",
+            likes: { $cond: { if: { $isArray: "$comments.likes" }, then: { $size: "$comments.likes" }, else: 0 } },
+            by: {
+              _id: "$comments.by._id",
+              name: "$comments.by.name",
+              dp: "$comments.by.dp"
+            },
+            datetime: "$comments.datetime"
+          }
+        },
+        { $addFields: { now: now } },
+        { $sort: { datetime: -1 } },
+        { $skip: skip },
+        { $limit: 20 },
+      ])
+      return res.status(200).json({ success: true, data })
+    } else {
+      return res.status(401).json({ success: false, message: "invalid id" })
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "server error" })
+  }
+}
+
 
 module.exports = {
   getPost,
@@ -316,4 +385,5 @@ module.exports = {
   likeOncomment,
   dislikeOncomment,
   deleteComment,
+  getComments
 }

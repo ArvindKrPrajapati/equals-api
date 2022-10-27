@@ -2,9 +2,10 @@ const express = require("express");
 const postroute = express.Router();
 
 
-const { getPost, doReact, comment, getSubPosts, uploadPost, getUserPosts, getSpecificPost, deletePost, likeOncomment, dislikeOncomment, deleteComment } = require("../controllers/post.controller");
+const { getPost, doReact, comment, getSubPosts, uploadPost, getUserPosts, getSpecificPost, deletePost, likeOncomment, dislikeOncomment, deleteComment, getComments } = require("../controllers/post.controller");
 
 postroute.route("/").get(getPost)
+postroute.route("/comment").get(getComments)
 postroute.post("/upload", uploadPost)
 postroute.route("/react").put(doReact)
 postroute.route("/comment").put(comment)
