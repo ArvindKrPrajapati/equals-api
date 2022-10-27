@@ -14,7 +14,7 @@ const getLoggedInUserInfo = async (req, res) => {
         }
         if (mongoose.Types.ObjectId.isValid(_id)) {
             _id = mongoose.Types.ObjectId(_id)
-            const data = await user.findOne({ _id }).select('_id name dp gender dob about')
+            const data = await user.findOne({ _id }).select('_id name dp gender dob about cover')
             if (!data) {
                 return res.status(404).json({ success: false, message: 'user not found' })
             }
@@ -25,7 +25,8 @@ const getLoggedInUserInfo = async (req, res) => {
                     dp: data.dp,
                     gender: data.gender,
                     dob: data.dob,
-                    about: data.about
+                    about: data.about,
+                    cover: data.cover
                 }
             })
         } else {
@@ -43,7 +44,7 @@ const getUserById = async (req, res) => {
         }
         if (mongoose.Types.ObjectId.isValid(_id)) {
             _id = mongoose.Types.ObjectId(_id)
-            const userInfo = await user.findOne({ _id }).select('_id name dp about dob gender')
+            const userInfo = await user.findOne({ _id }).select('_id name dp about dob gender cover')
             if (!userInfo) {
                 return res.status(404).json({ success: false, message: 'user not found' })
             }
@@ -62,7 +63,8 @@ const getUserById = async (req, res) => {
                     gender: userInfo.gender,
                     ifollow: ifollow == 0 ? false : true,
                     followers,
-                    followings
+                    followings,
+                    cover: userInfo.cover
                 }
             })
         } else {
@@ -113,10 +115,34 @@ const updateDp = async (req, res) => {
         res.status(500).json({ success: false, message: "server error" })
     }
 }
+const updateCover = async (req, res) => {
+    try {
+        const { cover } = req.body
+        if (!cover) {
+            return res.status(404).json({ success: false, message: "cover image is not provided" })
+        }
+        const data = await user.findByIdAndUpdate(req.userid, { cover }, { new: true })
+        getLoggedInUserInfo(req, res)
+    } catch (error) {
+        res.status(500).json({ success: false, message: "server error" })
+    }
+}
+
+const discoverPeople = async (req, res) => {
+    try {
+        const data = await user.find({}).select("-password")
+        return res.status(200).json({ success: true, data })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "server error" })
+    }
+}
+
 module.exports = {
     getLoggedInUserInfo,
     getUserById,
     liveSearch,
     editProfile,
     updateDp,
+    discoverPeople,
+    updateCover
 }

@@ -10,6 +10,9 @@ const user = new mongoose.Schema({
     dp: {
         type: String
     },
+    cover: {
+        type: String
+    },
     dob: {
         type: Date,
         default: null
