@@ -2,6 +2,7 @@ const user = require("../modals/user.modal")
 const post = require("../modals/post.modal")
 const follow = require("../modals/follow.modal")
 const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs")
 
 const mongoose = require('mongoose');
 
@@ -64,7 +65,8 @@ const getUserById = async (req, res) => {
                     ifollow: ifollow == 0 ? false : true,
                     followers,
                     followings,
-                    cover: userInfo.cover
+                    cover: userInfo.cover,
+                    dob: userInfo.dob
                 }
             })
         } else {
@@ -92,14 +94,41 @@ const liveSearch = async (req, res) => {
 
 const editProfile = async (req, res) => {
     try {
-        const { name, about, dob, gender } = req.body
-        if (!name) {
-            return res.status(404).json({ success: false, message: "name is not provided" })
+        const { userid } = req;
+        let { name, dob, gender, about, newpass, password } = req.body
+        if (!password) {
+            return res.status(404).json({ success: false, message: "old password should not be empty" })
         }
-        const data = await user.findByIdAndUpdate(req.userid, { name, about, dob, gender }, { new: true })
-        getLoggedInUserInfo(req, res)
+        const data = await user.findById(userid).select("password")
+        if (!bcrypt.compareSync(password, data.password)) {
+            return res.status(500).json({ success: false, message: "wrong password" })
+        }
+        var changeData = {}
+        if (newpass) {
+            let np = bcrypt.hashSync(newpass, 10);
+            changeData["password"] = np
+        }
+        if (name) {
+            changeData["name"] = name
+        }
+        if (dob) {
+            changeData["dob"] = new Date(dob)
+        }
+        if (gender) {
+            changeData["gender"] = gender
+        }
+        if (about) {
+            changeData["about"] = about
+        }
+        if (Object.keys(changeData).length == 0) {
+            return res.status(500).json({ success: false, message: "Enter any field to edit user profile" })
+
+        }
+        const d = await user.findByIdAndUpdate(userid, changeData, { new: true }).select("name dp")
+        return res.status(200).json({ success: true, data: { id: d._id, name: d.name, dp: d.dp } })
     } catch (error) {
-        res.status(500).json({ success: false, message: "server error" })
+        console.log(error);
+        return res.status(500).json({ success: false, message: "server error" })
     }
 }
 
@@ -109,9 +138,10 @@ const updateDp = async (req, res) => {
         if (!dp) {
             return res.status(404).json({ success: false, message: "dp is not provided" })
         }
-        const data = await user.findByIdAndUpdate(req.userid, { dp }, { new: true })
-        getLoggedInUserInfo(req, res)
+        const d = await user.findByIdAndUpdate(req.userid, { dp }, { new: true }).select("name dp")
+        return res.status(200).json({ success: true, data: { id: d._id, name: d.name, dp: d.dp } })
     } catch (error) {
+        console.log(error);
         res.status(500).json({ success: false, message: "server error" })
     }
 }
