@@ -1,4 +1,5 @@
 const { default: mongoose } = require("mongoose");
+const followModal = require("../modals/follow.modal");
 const post = require("../modals/post.modal");
 const user = require("../modals/user.modal");
 
@@ -246,7 +247,13 @@ const getSubPosts = async (req, res) => {
   try {
     const skip = Number(req.query.skip) || 0
     const now = Date.now()
+    const follow = await followModal.find({ by: req.userid }).select("to")
+    const myid = mongoose.Types.ObjectId(req.userid);
+
+    const followArray = await follow.map(o => o.to)
+    followArray.unshift(myid)
     const data = await post.aggregate([
+      { $match: { postedby: { $in: followArray } } },
       { $sort: { datetime: -1 } },
       { $skip: skip },
       { $limit: 10 },
