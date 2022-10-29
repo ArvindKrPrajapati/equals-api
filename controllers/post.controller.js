@@ -348,6 +348,7 @@ const getComments = async (req, res) => {
           $project: {
             _id: "$comments._id",
             comm: "$comments.comm",
+            isLiked: { $in: [mongoose.Types.ObjectId(req.userid), "$comments.likes.by"] },
             likes: { $cond: { if: { $isArray: "$comments.likes" }, then: { $size: "$comments.likes" }, else: 0 } },
             by: {
               _id: "$comments.by._id",
