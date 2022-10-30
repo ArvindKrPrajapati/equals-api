@@ -34,6 +34,10 @@ const user = new mongoose.Schema({
         type: String,
         required: true
     },
+    accountCreated: {
+        type: Boolean,
+        default: false
+    },
     datetime: { type: Date, default: Date.now }
 
 });
