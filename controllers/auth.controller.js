@@ -36,12 +36,6 @@ const signup = async (req, res) => {
                 const data = await user.create({ mobile, gender, name, password })
                 sendOtp(req, res, data, "created")
             }
-            // if (!varify) {
-            //     password = bcrypt.hashSync(password, 10);
-            //     const newUser = await user.create({ mobile, gender, name, password })
-            // } else {
-            //     return res.status(401).json({ success: false, message: "User already exists" })
-            // }
         } else {
             return res.status(400).json({ success: false, message: "invalid mobile number" })
         }
@@ -114,11 +108,14 @@ const varifyOtp = async (req, res) => {
         if (otp.toString().length !== 6) {
             return res.status(400).json({ success: false, message: "otp is invalid ( 6 digit otp)" })
         }
+
         const validOtp = await otpModal.findOne({ mobile, otp }).populate("userid")
         if (validOtp) {
             // send token
             await user.findByIdAndUpdate(validOtp.userid._id, { accountCreated: true })
             const token = jwt.sign({ id: validOtp.userid._id }, process.env.JWT_SECRET);
+            //    delete otp
+            await otpModal.findByIdAndDelete(validOtp._id)
             return res.status(200).json({ success: true, data: { id: validOtp.userid._id, name: validOtp.userid.name, dp: validOtp.userid.dp }, token })
         }
 
