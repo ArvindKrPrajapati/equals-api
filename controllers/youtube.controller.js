@@ -2,8 +2,7 @@ const ytdl = require("ytdl-core");
 
 const getLinks = async (req, res) => {
     try {
-        let { url } = req.body
-        const v_id = url.split('v=')[1];
+        let { url } = req.query
         if (!url) {
             return res.status(400).json({ success: false, message: "url is required" })
         }
