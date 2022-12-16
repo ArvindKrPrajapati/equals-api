@@ -110,16 +110,28 @@ const varifyOtp = async (req, res) => {
         }
 
         const validOtp = await otpModal.findOne({ mobile, otp }).populate("userid")
-        if (validOtp) {
-            // send token
-            await user.findByIdAndUpdate(validOtp.userid._id, { accountCreated: true })
-            const token = jwt.sign({ id: validOtp.userid._id }, process.env.JWT_SECRET);
-            //    delete otp
-            await otpModal.findByIdAndDelete(validOtp._id)
-            return res.status(200).json({ success: true, data: { id: validOtp.userid._id, name: validOtp.userid.name, dp: validOtp.userid.dp }, token })
-        }
+        // if (validOtp) {
+        //     // send token
+        //     await user.findByIdAndUpdate(validOtp.userid._id, { accountCreated: true })
+        //     const token = jwt.sign({ id: validOtp.userid._id }, process.env.JWT_SECRET);
+        //     //    delete otp
+        //     await otpModal.findByIdAndDelete(validOtp._id)
+        //     return res.status(200).json({ success: true, data: { id: validOtp.userid._id, name: validOtp.userid.name, dp: validOtp.userid.dp }, token })
+        // }
 
-        return res.status(400).json({ success: false, message: "wrong otp or mobile number" })
+        // return res.status(400).json({ success: false, message: "wrong otp or mobile number" })
+
+
+        //    uncomment when you are able to send message otp
+        // send token
+        const data = await user.findOneAndUpdate({ mobile }, { accountCreated: true })
+        const token = jwt.sign({ id: data._id }, process.env.JWT_SECRET);
+        // //    delete otp
+        await otpModal.findByIdAndDelete(user._id)
+
+        return res.status(200).json({ success: true, data: { id: data._id, name: data.name, dp: data.dp }, token })
+
+
 
     } catch (error) {
         console.log(error);
