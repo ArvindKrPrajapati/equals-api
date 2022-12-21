@@ -38,6 +38,10 @@ const user = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    chats: [{
+        roomId: { type: ObjectId, ref: 'messages' },
+        datetime: { type: Date, default: Date.now }
+    }],
     datetime: { type: Date, default: Date.now }
 
 });

@@ -1,6 +1,6 @@
-const user = require("../modals/user.modal")
-const post = require("../modals/post.modal")
-const follow = require("../modals/follow.modal")
+const user = require("../models/user.model")
+const post = require("../models/post.model")
+const follow = require("../models/follow.model")
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs")
 
