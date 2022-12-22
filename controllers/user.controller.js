@@ -161,7 +161,7 @@ const updateCover = async (req, res) => {
 const discoverPeople = async (req, res) => {
     try {
         const skip = Number(req.query.skip) || 0
-        const data = await user.find({}).select("-password -mobile").sort({ datetime: -1 }).skip(skip).limit(20)
+        const data = await user.find({ _id: { $nin: req.userid } }).select("-password -mobile -chats").sort({ datetime: -1 }).skip(skip).limit(20)
         return res.status(200).json({ success: true, data })
     } catch (error) {
         return res.status(500).json({ success: false, message: "server error" })
