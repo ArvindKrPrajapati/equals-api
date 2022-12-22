@@ -141,9 +141,9 @@ const getChats = async (req, res) => {
                     datetime: "$message.datetime",
                     user: {
                         $cond: {
-                            if: { $eq: ["$message.sender", userid] },
-                            then: "$message.sender",
-                            else: "$message.receiver"
+                            if: { $eq: ["$message.sender", _id] },
+                            then: "$message.receiver",
+                            else: "$message.sender"
                         }
                     }
                 }
