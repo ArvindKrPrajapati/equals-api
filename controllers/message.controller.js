@@ -39,9 +39,9 @@ const saveMessage = async (req, res) => {
             mess.video = video
         }
         const data = await messageModel.findByIdAndUpdate(room._id, { $push: { messages: mess } }, { new: true })
-        const lastMess = data.messages[data.messages.length - 1]
-        io.emit("room-" + roomId, lastMess)
-        return res.status(200).json({ success: true, data: lastMess })
+
+        io.emit("room-" + roomId, { data: data.messages.slice(-20).reverse() })
+        return res.status(200).json({ success: true, data: "mess send" })
 
 
     } catch (error) {
