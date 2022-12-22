@@ -23,7 +23,6 @@ io.on('connection', (socket) => {
 
     socket.on('message', (message) => {
         console.log(`message from ${socket.id} : ${message}`);
-        io.emit("message", "hello from server")
     })
 
     socket.on('disconnect', () => {

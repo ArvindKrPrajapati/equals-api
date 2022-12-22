@@ -40,7 +40,7 @@ const saveMessage = async (req, res) => {
         }
         const data = await messageModel.findByIdAndUpdate(room._id, { $push: { messages: mess } }, { new: true })
         const lastMess = data.messages[data.messages.length - 1]
-        io.emit("message-added", lastMess)
+        io.emit("room-" + roomId, lastMess)
         return res.status(200).json({ success: true, data: lastMess })
 
 
