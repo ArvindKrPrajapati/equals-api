@@ -20,10 +20,12 @@ const saveMessage = async (req, res) => {
             return res.status(500).json({ success: false, message: "text or image or video is required" })
         }
         let room = await messageModel.findOne({ roomId })
+        let info;
         if (!room) {
             room = await messageModel.create({ roomId })
             await userModel.findByIdAndUpdate(sender, { $push: { chats: { roomId: room._id } } }, { new: true })
             await userModel.findByIdAndUpdate(receiver, { $push: { chats: { roomId: room._id } } }, { new: true })
+            info = await userModel.find({ _id: { $in: [sender, receiver] } })
         }
         const mess = {
             sender,
@@ -40,7 +42,19 @@ const saveMessage = async (req, res) => {
         }
         const data = await messageModel.findByIdAndUpdate(room._id, { $push: { messages: mess } }, { new: true })
 
-        io.emit("room-" + roomId, { data: data.messages.slice(-20).reverse() })
+
+        const messages = data.messages.slice(-20).reverse()
+        let senderData = { roomId, messages, datetime: messages[0].datetime }
+        let receiverData = { roomId, messages, datetime: messages[0].datetime }
+        if (info) {
+            senderData["user"] = { _id: info[1]._id, name: info[1].name, dp: info[1].dp }
+            receiverData["user"] = { _id: info[0]._id, name: info[0].name, dp: info[0].dp }
+        }
+
+        io.emit("chat-" + sender, { data: senderData })
+        io.emit("chat-" + receiver, { data: receiverData })
+
+        io.emit("room-" + roomId, { data: messages })
         return res.status(200).json({ success: true, data: "mess send" })
 
 
