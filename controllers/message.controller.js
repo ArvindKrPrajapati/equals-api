@@ -133,8 +133,6 @@ const getChats = async (req, res) => {
                     path: "$chats"
                 }
             },
-            { $skip: skip },
-            { $limit: 20 },
             { $lookup: { from: 'messages', localField: 'chats.roomId', foreignField: '_id', as: 'chats' } },
             {
                 $unwind: {
@@ -186,8 +184,9 @@ const getChats = async (req, res) => {
                 }
             },
             { $sort: { datetime: -1 } },
+            { $skip: skip },
+            { $limit: 20 },
         ])
-        console.log(data.length);
         return res.status(200).json({ success: true, data })
     } catch (error) {
         console.log(error);
