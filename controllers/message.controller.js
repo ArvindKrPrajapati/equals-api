@@ -121,31 +121,36 @@ const getChats = async (req, res) => {
                     path: "$chats"
                 }
             },
-            { $lookup: { from: 'messages', localField: 'chats.roomId', foreignField: '_id', as: 'messages' } },
+            { $lookup: { from: 'messages', localField: 'chats.roomId', foreignField: '_id', as: 'chats' } },
             {
                 $unwind: {
-                    path: "$messages"
+                    path: "$chats"
                 }
             },
             {
                 $project: {
                     _id: 0,
-                    roomId: "$messages.roomId",
-                    message: { $arrayElemAt: ["$messages.messages", -1] },
+                    roomId: "$chats.roomId",
+                    // messages: "$chats.messages",
+                    // messages: {
+                    //     $sortArray: { input: "$chats.messages", sortBy: { "messages.datetime": 1 } }
+                    // }
+                    last: { $arrayElemAt: ["$chats.messages", -1] },
+                    messages: { $reverseArray: { $slice: ["$chats.messages", -20, 20] } },
                 }
             },
             {
                 $project: {
                     roomId: 1,
-                    text: "$message.text",
-                    datetime: "$message.datetime",
+                    messages: 1,
+                    datetime: "$last.datetime",
                     user: {
                         $cond: {
-                            if: { $eq: ["$message.sender", _id] },
-                            then: "$message.receiver",
-                            else: "$message.sender"
+                            if: { $eq: ["$last.sender", _id] },
+                            then: "$last.receiver",
+                            else: "$last.sender"
                         }
-                    }
+                    },
                 }
             },
             { $lookup: { from: 'users', localField: 'user', foreignField: '_id', as: 'user' } },
@@ -157,7 +162,7 @@ const getChats = async (req, res) => {
             {
                 $project: {
                     roomId: 1,
-                    text: 1,
+                    messages: 1,
                     datetime: 1,
                     user: {
                         _id: 1,
