@@ -7,6 +7,10 @@ const schema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    status: [{
+        _id: { type: ObjectId, ref: "user" },
+        seen: { type: Date }
+    }],
     messages: [{
         sender: { type: ObjectId, ref: 'user' },
         receiver: { type: ObjectId, ref: 'user' },
