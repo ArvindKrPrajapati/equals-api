@@ -9,7 +9,8 @@ const schema = new mongoose.Schema({
     },
     status: [{
         _id: { type: ObjectId, ref: "user" },
-        seen: { type: Date }
+        seen: { type: Date },
+        typing: { type: Boolean, default: true }
     }],
     messages: [{
         sender: { type: ObjectId, ref: 'user' },

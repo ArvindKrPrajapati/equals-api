@@ -244,12 +244,24 @@ const setSeenStatus = async (req, res) => {
 }
 
 
-const getTyping = (req, res) => {
+const getTyping = async (req, res) => {
     const { roomId } = req.params
     const { userid } = req
     const { status } = req.body
-    io.emit("typing-" + roomId, { data: { typing: userid, status } })
-    return res.status(200).json({ success: true, data: { typing: userid, status } })
+    let data;
+    const isExists = await messageModel.findOne({ roomId, status: { $elemMatch: { _id: userid } } })
+    if (isExists) {
+        data = await messageModel.findOneAndUpdate(
+            { roomId, "status._id": userid },
+            { $set: { "status.$.typing": status } },
+            { upsert: true, new: true }
+        )
+    }
+    if (!data) {
+        return res.status(400).json({ success: false, message: "room and user in status doesnt exists" })
+    }
+    io.emit("typing-" + roomId, { data: data.status })
+    return res.status(200).json({ success: true, data: data.status })
 }
 
 module.exports = {
