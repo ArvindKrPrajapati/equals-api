@@ -217,13 +217,13 @@ const setSeenStatus = async (req, res) => {
                 data = await messageModel.findOneAndUpdate(
                     { roomId, "status._id": userid },
                     { $set: { "status.$.seen": date } },
-                    { upsert: true }
+                    { upsert: true, new: true }
                 )
             } else {
                 data = await messageModel.updateOne(
                     { roomId },
                     { $push: { status: { _id: userid, seen: date } } },
-                    { upsert: true }
+                    { upsert: true, new: true }
                 )
             }
         }
